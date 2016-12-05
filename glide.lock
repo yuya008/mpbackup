@@ -1,6 +1,8 @@
-hash: a472ccdfd0138ee8f2e0c1db7d56132e5f1774d661398fd68107e8f1f8a2b3e6
-updated: 2016-12-04T22:57:22.33480698+08:00
+hash: 42832fbcae86fdbf41ba08644dd76ec5c6c2f203d325157e35d69fb308369ad6
+updated: 2016-12-05T01:09:21.065294552+08:00
 imports:
-- name: github.com/codegangsta/cli
+- name: github.com/BurntSushi/toml
+  version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
+- name: gopkg.in/urfave/cli.v2
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 testImports: []
