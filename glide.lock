@@ -1,8 +1,23 @@
-hash: 42832fbcae86fdbf41ba08644dd76ec5c6c2f203d325157e35d69fb308369ad6
-updated: 2016-12-05T01:09:21.065294552+08:00
+hash: 64b788fc9c8e0aa04d8f9d0d829e6d9151555bb96b4e342537820715c51ac49f
+updated: 2016-12-22T17:45:42.783196117+08:00
 imports:
-- name: github.com/BurntSushi/toml
-  version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
-- name: gopkg.in/urfave/cli.v2
-  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
+- name: github.com/golang/snappy
+  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
+- name: github.com/mkideal/cli
+  version: 0bc4738ef26827a45d3b50394d84d283f733ad63
+- name: github.com/syndtr/goleveldb
+  version: 6b4daa5362b502898ddf367c5c11deb9e7a5c727
+  subpackages:
+  - leveldb
+  - leveldb/cache
+  - leveldb/comparer
+  - leveldb/errors
+  - leveldb/filter
+  - leveldb/iterator
+  - leveldb/journal
+  - leveldb/memdb
+  - leveldb/opt
+  - leveldb/storage
+  - leveldb/table
+  - leveldb/util
 testImports: []
