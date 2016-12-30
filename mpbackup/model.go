@@ -33,110 +33,111 @@ type MepaiActivity struct {
 
 func (mp *Mpbackup) pushUserToDownLoader() {
 	for i := 1; ; i++ {
-		err := mp.dbEngine.Limit(1000, (i - 1) * 1000).Asc("id").Iterate(
-			new(MepaiUser), func(i int, bean interface{}) error {
-				user := bean.(*MepaiUser)
-				avatarURL, err := url.Parse(URLPrefix + user.Avatar)
-				if err != nil {
-					runlog.Println(err.Error())
-					return nil
-				}
-				coverURL, err := url.Parse(URLPrefix + user.Cover)
-				if err != nil {
-					runlog.Println(err.Error())
-					return nil
-				}
-				
-				avatarDownTask := &downloader.Task{
-					Url : avatarURL.String(),
-					To : path.Clean(mp.backupPath + "/" + avatarURL.EscapedPath()),
-				}
-				runlog.Println("推送 -> ", avatarDownTask)
-				mp.downloader.Push(avatarDownTask)
-				
-				coverTask := &downloader.Task{
-					Url : coverURL.String(),
-					To : path.Clean(mp.backupPath + "/" + coverURL.EscapedPath()),
-				}
-				runlog.Println("推送 -> ", coverTask)
-				mp.downloader.Push(coverTask)
-				return nil
-			},
-		)
+		users := make([]MepaiUser, 0)
+		err := mp.dbEngine.Limit(1000, (i - 1) * 1000).Asc("id").Find(&users)
 		if err != nil {
-			runlog.Println(err.Error())
+			runlog.Panicln(err.Error())
+		}
+		if len(users) == 0 {
+			return
+		}
+		for _, user := range users {
+			avatarURL, err := url.Parse(URLPrefix + user.Avatar)
+			if err != nil {
+				runlog.Println(err.Error())
+				continue
+			}
+			coverURL, err := url.Parse(URLPrefix + user.Cover)
+			if err != nil {
+				runlog.Println(err.Error())
+				continue
+			}
+			avatarDownTask := &downloader.Task{
+				Url : avatarURL.String(),
+				To : path.Clean(mp.backupPath + "/" + avatarURL.EscapedPath()),
+			}
+			runlog.Println("推送 -> ", avatarDownTask)
+			mp.downloader.Push(avatarDownTask)
+			coverTask := &downloader.Task{
+				Url : coverURL.String(),
+				To : path.Clean(mp.backupPath + "/" + coverURL.EscapedPath()),
+			}
+			runlog.Println("推送 -> ", coverTask)
+			mp.downloader.Push(coverTask)
 		}
 	}
 }
 
 func (mp *Mpbackup) pushWorksAppendixToDownLoader() {
 	for i := 1; ; i++ {
-		err := mp.dbEngine.Limit(1000, (i - 1) * 1000).Asc("id").Iterate(
-			new(MepaiWorksAppendix), func(i int, bean interface{}) error {
-				worksAppendix := bean.(*MepaiWorksAppendix)
-				worksAppendixURL, err := url.Parse(URLPrefix + worksAppendix.Src)
-				if err != nil {
-					runlog.Println(err.Error())
-					return nil
-				}
-				worksAppendixTask := &downloader.Task{
-					Url : worksAppendixURL.String(),
-					To : path.Clean(mp.backupPath + "/" + worksAppendixURL.EscapedPath()),
-				}
-				runlog.Println("推送 -> ", worksAppendixTask)
-				mp.downloader.Push(worksAppendixTask)
-				return nil
-			},
-		)
+		worksAppendixs := make([]MepaiWorksAppendix, 0)
+		err := mp.dbEngine.Limit(1000, (i - 1) * 1000).Asc("id").Find(&worksAppendixs)
 		if err != nil {
-			runlog.Println(err.Error())
+			runlog.Panicln(err.Error())
+		}
+		if len(worksAppendixs) == 0 {
+			return
+		}
+		for _, worksAppendix := range worksAppendixs {
+			worksAppendixURL, err := url.Parse(URLPrefix + worksAppendix.Src)
+			if err != nil {
+				runlog.Println(err.Error())
+				continue
+			}
+			worksAppendixTask := &downloader.Task{
+				Url : worksAppendixURL.String(),
+				To : path.Clean(mp.backupPath + "/" + worksAppendixURL.EscapedPath()),
+			}
+			runlog.Println("推送 -> ", worksAppendixTask)
+			mp.downloader.Push(worksAppendixTask)
 		}
 	}
 }
 
 func (mp *Mpbackup) pushActivityToDownLoader() {
 	for i := 1; ; i++ {
-		err := mp.dbEngine.Limit(1000, (i - 1) * 1000).Asc("id").Iterate(
-			new(MepaiActivity), func(i int, bean interface{}) error {
-				activity := bean.(*MepaiActivity)
-				coverURL, err := url.Parse(URLPrefix + activity.Cover)
-				if err != nil {
-					runlog.Println(err.Error())
-					return nil
-				}
-				coverTask := &downloader.Task{
-					Url : coverURL.String(),
-					To : path.Clean(mp.backupPath + "/" + coverURL.EscapedPath()),
-				}
-				runlog.Println("推送 -> ", coverTask)
-				mp.downloader.Push(coverTask)
-				// DOM 分析
-				imgSrc, err := htmlImgSrcParser([]byte(activity.Content))
-				if err != nil {
-					runlog.Println(err.Error())
-					return nil
-				}
-				for _, imgS := range imgSrc {
-					if !strings.Contains(imgS, "mepai") {
-						continue
-					}
-					imgSrcURL, err := url.Parse(imgS)
-					if err != nil {
-						runlog.Println(err.Error())
-						return nil
-					}
-					imgSrcTask := &downloader.Task{
-						Url : imgSrcURL.String(),
-						To : path.Clean(mp.backupPath + "/" + imgSrcURL.EscapedPath()),
-					}
-					runlog.Println("推送 -> ", imgSrcTask)
-					mp.downloader.Push(imgSrcTask)
-				}
-				return nil
-			},
-		)
+		activitys := make([]MepaiActivity, 0)
+		err := mp.dbEngine.Limit(1000, (i - 1) * 1000).Asc("id").Find(&activitys)
 		if err != nil {
-			runlog.Println(err.Error())
+			runlog.Panicln(err.Error())
+		}
+		if len(activitys) == 0 {
+			return
+		}
+		for _, activity := range activitys {
+			coverURL, err := url.Parse(URLPrefix + activity.Cover)
+			if err != nil {
+				runlog.Println(err.Error())
+				continue
+			}
+			coverTask := &downloader.Task{
+				Url : coverURL.String(),
+				To : path.Clean(mp.backupPath + "/" + coverURL.EscapedPath()),
+			}
+			runlog.Println("推送 -> ", coverTask)
+			mp.downloader.Push(coverTask)
+			// DOM 分析
+			imgSrc, err := htmlImgSrcParser([]byte(activity.Content))
+			if err != nil {
+				runlog.Println(err.Error())
+				continue
+			}
+			for _, imgS := range imgSrc {
+				if !strings.Contains(imgS, "mepai") {
+					continue
+				}
+				imgSrcURL, err := url.Parse(imgS)
+				if err != nil {
+					runlog.Println(err.Error())
+					continue
+				}
+				imgSrcTask := &downloader.Task{
+					Url : imgSrcURL.String(),
+					To : path.Clean(mp.backupPath + "/" + imgSrcURL.EscapedPath()),
+				}
+				runlog.Println("推送 -> ", imgSrcTask)
+				mp.downloader.Push(imgSrcTask)
+			}
 		}
 	}
 }

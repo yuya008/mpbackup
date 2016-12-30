@@ -10,20 +10,20 @@ import (
 	"os"
 	"github.com/yuya008/mpbackup/downloader"
 	"github.com/go-xorm/core"
-	//"github.com/syndtr/goleveldb/leveldb"
-	
 )
 
 type Cfg struct {
 	cli.Helper
-	Dbhost		string	`cli:"dbhost" usage:"数据库host" dft:"0.0.0.0"`
-	Dbuser		string	`cli:"dbuser" usage:"数据库用户名" dft:"root"`
-	Dbpwd		string	`cli:"dbpwd" usage:"数据库密码" dft:""`
-	Dbport 		int		`cli:"dbport" usage:"数据库端口" dft:"3306"`
-	Dbcharset 	string	`cli:"dbcharset" usage:"数据库客户端字符集" dft:"utf8mb4"`
-	Dbname		string  `cli:"dbname" usage:"数据库名" dft:"mepainew"`
-	LogPath		string	`cli:"logpath" usage:"日志数据文件存储路径" dft:"."`
-	BackupPath	string 	`cli:"backuppath" usage:"备份输出目录" dft:"."`
+	Dbhost string `cli:"dbhost" usage:"数据库host" dft:"0.0.0.0"`
+	Dbuser string `cli:"dbuser" usage:"数据库用户名" dft:"root"`
+	Dbpwd string `cli:"dbpwd" usage:"数据库密码" dft:""`
+	Dbport int `cli:"dbport" usage:"数据库端口" dft:"3306"`
+	Dbcharset string `cli:"dbcharset" usage:"数据库客户端字符集" dft:"utf8mb4"`
+	Dbname string `cli:"dbname" usage:"数据库名" dft:"mepainew"`
+	LogPath string `cli:"logpath" usage:"日志数据文件存储路径" dft:"."`
+	BackupPath string `cli:"backuppath" usage:"备份输出目录" dft:"."`
+	DownLoaderThreadN int `cli:"downloaderthreadn" usage:"下载器线程数" dft:"1000"`
+	DownLoaderTaskQueueLen int `cli:"downLoadertaskqueuelen" usage:"下载器任务队列长度" dft:"10000"`
 }
 
 type Mpbackup struct {
@@ -96,44 +96,24 @@ func (mp *Mpbackup) init(c *Cfg) {
 	// 定时ping
 	runlog.Println("开启数据库ping任务")
 	go mp.pinger()
-	
-	//runlog.Println("初始化leveldb")
-	//leveldbDataPath := c.LogPath + DataPath
-	//fileInfo, err = os.Stat(leveldbDataPath)
-	//if err != nil {
-	//	if os.IsNotExist(err) {
-	//		err = os.MkdirAll(leveldbDataPath, FileMode)
-	//		if err != nil {
-	//			runlog.Panicln("创建目录失败 " + err.Error())
-	//		}
-	//	} else {
-	//		runlog.Panicln(err.Error())
-	//	}
-	//}
-	//if !fileInfo.IsDir() {
-	//	runlog.Panicln(leveldbDataPath + " 不是目录")
-	//}
-	//mp.logdb, err = leveldb.OpenFile(leveldbDataPath, nil)
-	//if err != nil {
-	//	runlog.Panicln(err.Error())
-	//}
-	
 	runlog.Println("初始化下载器")
-	mp.downloader = downloader.NewHttpDownLoader(1000, 10000)
+	mp.downloader = downloader.NewHttpDownLoader(c.DownLoaderThreadN, c.DownLoaderTaskQueueLen)
 	file, err = os.OpenFile(c.LogPath + DownLoaderLogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, FileMode)
 	if err != nil {
 		runlog.Panicln(err.Error())
 	}
 	mp.downloader.SetLoggerWriter(file, downloader.LogFlag)
-	
 	mp.backupPath = c.BackupPath
 }
 
 func (mp *Mpbackup) Run(c *Cfg) error {
 	mp.init(c)
 	go func() {
-		//mp.pushUserToDownLoader()
+		runlog.Println("开始推送用户任务")
+		mp.pushUserToDownLoader()
+		runlog.Println("开始推送作品任务")
 		mp.pushWorksAppendixToDownLoader()
+		runlog.Println("开始推送活动任务")
 		mp.pushActivityToDownLoader()
 		mp.downloader.Done()
 	}()

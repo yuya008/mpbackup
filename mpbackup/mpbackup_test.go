@@ -13,15 +13,9 @@ func TestMpbackup(t *testing.T) {
 	}
 	db.Ping()
 	db.SetColumnMapper(core.GonicMapper{})
-	user := &MepaiUser{}
-	db.Where("id=?", 10001).Get(user)
-	t.Log(user)
+	users := make([]MepaiUser, 0)
 	
-	worksAppendix := &MepaiWorksAppendix{}
-	db.Where("id=?", 629).Get(worksAppendix)
-	t.Log(worksAppendix)
-	
-	activity := &MepaiActivity{}
-	db.Where("id=?", 154).Get(activity)
-	t.Log(activity)
+	err = db.Limit(1000, (1000000 - 1) * 1000).Asc("id").Find(&users)
+	t.Log(err)
+	t.Log(users)
 }
