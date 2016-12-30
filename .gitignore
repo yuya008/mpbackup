@@ -29,6 +29,6 @@ _testmain.go
 *.out
 
 # external packages folder
-.idea
+.idea/
 test
 
